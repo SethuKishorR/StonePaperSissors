@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock, Paper, Scissors Game</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Background and text colors */
+        body {
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #201E43 25%, #134B70 50%, #508C9B 75%, #EEEEEE 100%);
+            font-family: 'Arial', sans-serif;
+            color: #EEEEEE;
+        }
+
+        /* Card styling */
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            background-color: #FFFFFF;
+        }
+
+        h1, h4 {
+            font-weight: bold;
+        }
+
+        h1 {
+            color: #201E43;
+            font-size: 2rem;
+        }
+
+        h4 {
+            font-size: 1.5rem;
+            color: #134B70;
+        }
+
+        /* Button color variations */
+        .btn-choice {
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .btn-primary, .btn-primary:hover, .btn-primary:focus {
+            border: transparent !important;
+            background-color: #201E43;
+            border-color: #134B70;
+        }
+
+        .btn-success, .btn-success:hover, .btn-success:focus {
+            border: transparent !important;
+            background-color: #508C9B;
+            border-color: #407280;
+        }
+
+        .btn-danger, .btn-danger:hover, .btn-danger:focus {
+            border: transparent !important;
+            background-color: #134B70;
+            border-color: #0D3652;
+        }
+
+        .btn-choice:hover {
+            transform: translateY(-1px);
+        }
+
+        #reload {
+            display: none;
+        }
+
+        /* Styling for score and choices */
+        #playerChoice, #computerChoice, #roundResult {
+            font-size: 1rem;
+            color: #201E43;
+        }
+
+        /* Style for results */
+        .result-box {
+            animation: fadeInResult 0.5s ease;
+        }
+
+        @keyframes fadeInResult {
+            0% {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .d-flex p {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #201E43;
+        }
+
+        /* Removing focus outline */
+        button:focus {
+            border: transparent !important;
+            box-shadow: none !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-sm py-4 px-4">
+                    <div class="card-body text-center">
+                        <h1>Rock, Paper, Scissors Game</h1>
+                        <p class="text-secondary" style="font-size: 12px;">Click a button below to make your choice!</p>
+
+                        <!-- Buttons for Player Choice -->
+                        <div class="d-flex justify-content-center my-3">
+                            <button class="btn btn-primary mx-2 btn-choice" data-choice="rock">Rock</button>
+                            <button class="btn btn-success mx-2 btn-choice" data-choice="paper">Paper</button>
+                            <button class="btn btn-danger mx-2 btn-choice" data-choice="scissor">Scissor</button>
+                        </div>
+
+                        <!-- Cards to Display Results -->
+                        <div class="row mt-4" id="cards">
+                            <!-- Player's Choice -->
+                            <div class="col-md-4 py-1">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <p class="card-title" style="font-weight: 600;font-size: 20px; color: #201E43;">Player</p>
+                                        <p class="card-text" id="playerChoice">---</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Computer's Choice -->
+                            <div class="col-md-4 py-1">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <p class="card-title" style="font-weight: 600;font-size: 20px; color: #134B70;">Computer</p>
+                                        <p class="card-text" id="computerChoice">---</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Result -->
+                            <div class="col-md-4 py-1">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <p class="card-title" style="font-weight: 600;font-size: 20px; color: #508C9B;">Result</p>
+                                        <p class="card-text" id="roundResult">---</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Overall Result and Scores -->
+                        <div class="result-box text-center mt-2">
+                            <h4 id="overallResult" class="fw-bold"></h4>
+                        </div>
+                        <div class="d-flex justify-content-center">
+                            <button class="btn btn-success mb-2 my-2" id="reload" onclick="location.reload()">Play Again</button>
+                        </div>
+                        <div class="d-flex justify-content-between my-4">
+                            <p id="playerScore" class="mb-0">Player Score: 0</p>
+                            <p id="computerScore" class="mb-0">Computer Score: 0</p>
+                            <p id="tie" class="mb-0">Tie Score: 0</p>
+                            <p id="roundCount" class="mb-0">Rounds Played: 0/10</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let arr = ['rock', 'paper', 'scissors'];
+        let player;
+        let computer;
+        let playerScore = 0;
+        let computerScore = 0;
+        let tie = 0;
+        let roundCount = 0;
+
+        function task() {
+            return (player === computer) ? 'Tie' : 
+                   ((computer === 'rock' && player === 'scissor') || 
+                    (computer === 'paper' && player === 'rock') || 
+                    (computer === 'scissors' && player === 'paper')) ? 'Computer Wins' : 'Player Wins';
+        }
+
+        const buttons = document.querySelectorAll('.btn-choice');
+        
+        buttons.forEach(button => {
+            button.addEventListener('click', function() {
+                player = this.getAttribute('data-choice');
+                computer = arr[Math.floor(Math.random() * 3)];
+                let result = task();
+                roundCount++;
+
+                if (result === 'Player Wins') {
+                    playerScore++;
+                } else if (result === 'Computer Wins') {
+                    computerScore++;
+                } else{
+                    tie++;
+                }
+
+                // Update the UI
+                document.getElementById('playerChoice').textContent = player.charAt(0).toUpperCase() + player.slice(1);
+                document.getElementById('computerChoice').textContent = computer.charAt(0).toUpperCase() + computer.slice(1);
+                document.getElementById('roundResult').textContent = result;
+                document.getElementById('playerScore').textContent = `Player Score: ${playerScore}`;
+                document.getElementById('computerScore').textContent = `Computer Score: ${computerScore}`;
+                document.getElementById('tie').textContent = `Tie Score: ${tie}`;
+                document.getElementById('roundCount').textContent = `Rounds Played: ${roundCount}/10`;
+
+                // Display overall result after 10 rounds
+                if (roundCount === 10) {
+                    if (playerScore > computerScore) {
+                        document.getElementById('overallResult').textContent = 'Player Wins Overall!';
+                    } else if (computerScore > playerScore) {
+                        document.getElementById('overallResult').textContent = 'Computer Wins Overall!';
+                    } else {
+                        document.getElementById('overallResult').textContent = 'Match Tie!';
+                    }
+                    triggerConfetti(); // Trigger confetti when the game ends
+                    // Disable buttons after the game ends
+                    buttons.forEach(btn => btn.style.display='none');
+                    document.getElementById('cards').style.display='none';
+                    document.getElementById('reload').style.display='block';
+                }
+            });
+        });
+
+        function triggerConfetti() {
+            const end = Date.now() + 5 * 1000;
+
+                    // go Buckeyes!
+            const colors = ["#bb0000", "#ffffff"];
+
+            (function frame() {
+            confetti({
+                particleCount: 2,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 },
+                colors: colors,
+            });
+
+            confetti({
+                particleCount: 2,
+                angle: 120,
+                spread: 35,
+                origin: { x: 1 },
+                colors: colors,
+            });
+
+            if (Date.now() < end) {
+                requestAnimationFrame(frame);
+            }
+            })();
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@tsparticles/confetti@3.0.3/tsparticles.confetti.bundle.min.js"></script>
+</body>
+
+</html>
